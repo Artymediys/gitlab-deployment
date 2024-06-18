@@ -1,0 +1,14 @@
+---
+- name: Create GitLab repository directory
+  file:
+    path: "{{ gitlab_repo_path }}"
+    state: directory
+    owner: "{{ gitlab_user }}"
+    group: "{{ gitlab_group }}"
+    mode: '0755'
+
+- name: Copy GitLab Docker Compose template
+  template:
+    src: docker-compose.yml.j2
+    dest: "{{ gitlab_repo_path }}/docker-compose.yml"
+  notify: Restart GitLab

@@ -1,0 +1,6 @@
+---
+- name: Installing and configuring Gitlab
+  hosts: gitlab_server
+  become: yes
+  roles:
+    - role: gitlab

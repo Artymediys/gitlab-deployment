@@ -1,0 +1,135 @@
+version: '3.6'
+
+services:
+  gitlab:
+    image: 'gitlab/gitlab-ce:{{ gitlab_ce_version }}'
+    container_name: 'gitlab'
+    restart: always
+    hostname: 'gitlab'
+    environment:
+      GITLAB_OMNIBUS_CONFIG: |
+        external_url 'http{{ enable_ssl | ternary("s", "") }}://{{ gitlab_host_url }}'
+        gitlab_rails['gitlab_shell_ssh_port'] = 2424
+        {% if gitlab_external_nginx %}
+        nginx['listen_port'] = 80
+        nginx['listen_https'] = false
+        {% endif %}
+        {% if gitlab_external_ldap %}
+        gitlab_rails['ldap_enabled'] = true
+        gitlab_rails['ldap_servers'] = YAML.load <<-EOS
+        main:
+          label: 'LDAP'
+          host: '{{ ldap_bind_params.host }}'
+          port: {{ ldap_bind_params.port }}
+          uid: '{{ ldap_bind_params.uid }}'
+          bind_dn: '{{ ldap_bind_params.bind_dn }}'
+          password: '{{ ldap_bind_params.password }}'
+          encryption: '{{ ldap_bind_params.encryption }}'
+          verify_certificates: true
+          smartcard_auth: false
+          active_directory: true
+          allow_username_or_email_login: false
+          lowercase_usernames: false
+          block_auto_created_users: false
+          base: '{{ ldap_bind_params.base }}'
+          group_base: '{{ ldap_bind_params.group_base }}'
+          admin_group: '{{ ldap_bind_params.admin_group }}'
+          sync_ssh_keys: {{ ldap_bind_params.sync_ssh_keys }}
+        EOS
+        {% endif %}
+    volumes:
+      - '{{ gitlab_repo_path }}/config:/etc/gitlab'
+      - '{{ gitlab_repo_path }}/logs:/var/log/gitlab'
+      - '{{ gitlab_repo_path }}/data:/var/opt/gitlab'
+    ports:
+      - '8080:80'
+      - '2424:22'
+    depends_on:
+      - postgres
+      - redis
+  postgres:
+    image: 'postgres:{{ postgres_version }}'
+    container_name: 'postgres'
+    restart: always
+    environment:
+      POSTGRES_USER: '{{ postgresql_user }}'
+      POSTGRES_PASSWORD: '{{ postgresql_password }}'
+    volumes:
+      - 'postgres_data:/var/lib/postgresql/data'
+  redis:
+    image: 'redis:{{ redis_version }}'
+    container_name: 'redis'
+    restart: always
+    volumes:
+      - 'redis_data:/var/lib/redis'
+volumes:
+  postgres_data:
+  redis_data:
+
+version: '3.6'
+
+services:
+  gitlab:
+    image: 'gitlab/gitlab-ce:{{ gitlab_ce_version }}'
+    container_name: 'gitlab'
+    restart: always
+    hostname: 'gitlab'
+    environment:
+      GITLAB_OMNIBUS_CONFIG: |
+        external_url 'http{{ enable_ssl | ternary("s", "") }}://{{ gitlab_host_url }}'
+        gitlab_rails['gitlab_shell_ssh_port'] = 2424
+        {% if gitlab_external_nginx %}
+        nginx['listen_port'] = 80
+        nginx['listen_https'] = false
+        {% endif %}
+        {% if gitlab_external_ldap %}
+        gitlab_rails['ldap_enabled'] = true
+        gitlab_rails['ldap_servers'] = YAML.load <<-EOS
+          main:
+            label: 'LDAP'
+            host: '{{ ldap_bind_params.host }}'
+            port: {{ ldap_bind_params.port }}
+            uid: '{{ ldap_bind_params.uid }}'
+            bind_dn: '{{ ldap_bind_params.bind_dn }}'
+            password: '{{ ldap_bind_params.password }}'
+            encryption: '{{ ldap_bind_params.encryption }}'
+            verify_certificates: true
+            smartcard_auth: false
+            active_directory: true
+            allow_username_or_email_login: false
+            lowercase_usernames: false
+            block_auto_created_users: false
+            base: '{{ ldap_bind_params.base }}'
+            group_base: '{{ ldap_bind_params.group_base }}'
+            admin_group: '{{ ldap_bind_params.admin_group }}'
+            sync_ssh_keys: {{ ldap_bind_params.sync_ssh_keys }}
+        EOS
+        {% endif %}
+    volumes:
+      - '{{ gitlab_repo_path }}/config:/etc/gitlab'
+      - '{{ gitlab_repo_path }}/logs:/var/log/gitlab'
+      - '{{ gitlab_repo_path }}/data:/var/opt/gitlab'
+    ports:
+      - '8080:80'
+      - '2424:22'
+    depends_on:
+      - postgres
+      - redis
+  postgres:
+    image: 'postgres:{{ postgres_version }}'
+    container_name: 'postgres'
+    restart: always
+    environment:
+      POSTGRES_USER: '{{ postgresql_user }}'
+      POSTGRES_PASSWORD: '{{ postgresql_password }}'
+    volumes:
+      - 'postgres_data:/var/lib/postgresql/data'
+  redis:
+    image: 'redis:{{ redis_version }}'
+    container_name: 'redis'
+    restart: always
+    volumes:
+      - 'redis_data:/var/lib/redis'
+volumes:
+  postgres_data:
+  redis_data:

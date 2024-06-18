@@ -1,0 +1,16 @@
+---
+- name: Creating GitLab user and group
+  import_tasks: user.yml
+
+- name: Installing Docker and Docker Compose
+  import_tasks: docker_installation.yml
+
+- name: Configuring GitLab
+  import_tasks: gitlab_configuration.yml
+
+- name: Configuring Nginx
+  import_tasks: nginx_configuration.yml
+  when: gitlab_external_nginx
+
+- name: Launching GitLab
+  import_tasks: launch.yml

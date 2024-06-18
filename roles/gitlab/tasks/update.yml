@@ -1,0 +1,7 @@
+---
+- name: Pull the latest GitLab Docker images
+  community.docker.docker_compose:
+    project_src: "{{ gitlab_repo_path }}"
+    pull: true
+    state: present
+    restart: true

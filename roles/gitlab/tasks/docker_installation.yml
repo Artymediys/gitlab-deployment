@@ -1,0 +1,30 @@
+---
+- name: Install Docker and Docker Compose (AltLinux)
+  package:
+    name:
+      - python3-module-pip
+      - docker-cli
+      - docker-engine
+      - docker-compose-v2
+    state: present
+
+#- name: Install Docker and Docker Compose
+#  package:
+#    name:
+#      - docker
+#      - docker-compose
+#    state: present
+
+- name: Install Docker SDK for Python and Docker Compose SDK for Python
+  pip:
+    name:
+      - docker
+      - docker-compose
+    state: present
+    executable: pip3
+
+- name: Start Docker service
+  service:
+    name: docker
+    state: started
+    enabled: yes

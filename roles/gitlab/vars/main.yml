@@ -1,0 +1,38 @@
+---
+gitlab_ce_version: latest
+postgres_version: latest
+redis_version: latest
+
+gitlab_user: gitlab
+gitlab_group: gitlab
+
+nginx_user: nginx
+nginx_group: nginx
+
+gitlab_host_url: 172.20.10.4
+
+postgresql_user: 'super_user'
+postgresql_password: 'secure_password'
+
+gitlab_repo_path: "/srv/gitlab"
+
+gitlab_external_nginx: false
+gitlab_nginx_server_name: "gitlab.example.com"
+nginx_path: "/etc/nginx"
+
+enable_ssl: false
+ssl_certificate_path: "{{ nginx_path }}/ssl/gitlab.crt"
+ssl_certificate_key_path: "{{ nginx_path }}/ssl/gitlab.key"
+
+gitlab_external_ldap: false
+ldap_bind_params:
+  host: "ldap.example.com"
+  port: 389
+  uid: "sAMAccountName"
+  bind_dn: "cn=binduser,dc=example,dc=com"
+  password: "bindpassword"
+  encryption: "plain"
+  base: "dc=example,dc=com"
+  group_base: "ou=groups,dc=example,dc=com"
+  admin_group: "cn=admins,ou=groups,dc=example,dc=com"
+  sync_ssh_keys: true
