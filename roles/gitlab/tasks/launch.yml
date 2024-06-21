@@ -1,6 +1,21 @@
 ---
-- name: Run Docker Compose to start GitLab
-  community.docker.docker_compose:
-    project_src: "{{ gitlab_repo_path }}"
-    state: present
-    restarted: true
+- name: Check if any container is running # AltLinux
+  shell: >
+    docker compose -f {{ gitlab_repo_path }}/docker-compose.yml ps --services --filter "status=running"
+  args:
+    chdir: "{{ gitlab_repo_path }}"
+  register: running_containers
+
+- name: Run Docker Compose to start GitLab # AltLinux
+  shell: >
+    docker compose -f {{ gitlab_repo_path }}/docker-compose.yml up -d
+  args:
+    chdir: "{{ gitlab_repo_path }}"
+  when: running_containers.stdout == ""
+
+- name: Restart GitLab using Docker Compose # AltLinux
+  shell: >
+    docker compose -f {{ gitlab_repo_path }}/docker-compose.yml up --force-recreate -d
+  args:
+    chdir: "{{ gitlab_repo_path }}"
+  when: running_containers.stdout != ""

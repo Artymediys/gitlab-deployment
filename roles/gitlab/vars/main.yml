@@ -9,10 +9,12 @@ gitlab_group: gitlab
 nginx_user: nginx
 nginx_group: nginx
 
-gitlab_host_url: 172.20.10.4
+gitlab_host_url: 192.168.1.251
 
 postgresql_user: 'super_user'
 postgresql_password: 'secure_password'
+
+gitlab_root_password: "super_password"
 
 gitlab_repo_path: "/srv/gitlab"
 

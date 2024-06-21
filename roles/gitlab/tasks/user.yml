@@ -3,7 +3,6 @@
   group:
     name: "{{ gitlab_group }}"
     system: yes
-  notify: Restart GitLab
 
 - name: Create GitLab user
   user:
@@ -11,4 +10,3 @@
     system: yes
     shell: /usr/sbin/nologin
     group: "{{ gitlab_group }}"
-  notify: Restart GitLab

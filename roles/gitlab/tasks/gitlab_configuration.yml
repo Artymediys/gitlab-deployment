@@ -11,4 +11,3 @@
   template:
     src: docker-compose.yml.j2
     dest: "{{ gitlab_repo_path }}/docker-compose.yml"
-  notify: Restart GitLab
