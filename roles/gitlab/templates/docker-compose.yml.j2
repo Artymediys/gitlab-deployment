@@ -5,10 +5,9 @@ services:
     image: 'gitlab/gitlab-ce:{{ gitlab_ce_version }}'
     container_name: 'gitlab'
     restart: always
-    hostname: 'gitlab'
     environment:
       GITLAB_OMNIBUS_CONFIG: |
-        external_url 'http{{ enable_ssl | ternary("s", "") }}://{{ gitlab_host_url }}'
+        external_url 'http{{ enable_ssl | ternary("s", "") }}://{{ groups['gitlab_host'][0] }}'
         gitlab_rails['initial_root_password'] = '{{ gitlab_root_password }}'
 
         {% if gitlab_external_nginx %}
@@ -16,29 +15,62 @@ services:
         nginx['listen_https'] = false
         {% endif %}
 
+        {% if gitlab_external_postgres %}
+        postgresql['enable'] = false
+        gitlab_rails['db_username'] = '{{ psql_username }}'
+        gitlab_rails['db_password'] = '{{ psql_password }}'
+        gitlab_rails['db_database'] = '{{ psql_database }}'
+        gitlab_rails['db_host'] = '{{ groups['postgres_host'][0] }}'
+        gitlab_rails['db_port'] = 5432
+        gitlab_rails['db_adapter'] = 'postgresql'
+        gitlab_rails['db_encoding'] = 'unicode'
+        {% endif %}
+
         {% if gitlab_external_ldap %}
         gitlab_rails['ldap_enabled'] = true
-        gitlab_rails['ldap_servers'] = YAML.load <<-EOS
-          main:
-            label: 'LDAP'
-            host: '{{ ldap_bind_params.host }}'
-            port: {{ ldap_bind_params.port }}
-            uid: '{{ ldap_bind_params.uid }}'
-            bind_dn: '{{ ldap_bind_params.bind_dn }}'
-            password: '{{ ldap_bind_params.password }}'
-            encryption: '{{ ldap_bind_params.encryption }}'
-            verify_certificates: true
-            smartcard_auth: false
-            active_directory: true
-            allow_username_or_email_login: false
-            lowercase_usernames: false
-            block_auto_created_users: false
-            base: '{{ ldap_bind_params.base }}'
-            group_base: '{{ ldap_bind_params.group_base }}'
-            admin_group: '{{ ldap_bind_params.admin_group }}'
-            sync_ssh_keys: {{ ldap_bind_params.sync_ssh_keys }}
-        EOS
+        gitlab_rails['ldap_servers'] = {
+          'main' => {
+            'label' => 'LDAP',
+            'host' => '{{ ldap_bind_params.host }}'
+            'port' => {{ ldap_bind_params.port }}
+            'uid' => '{{ ldap_bind_params.uid }}'
+            'bind_dn' => '{{ ldap_bind_params.bind_dn }}'
+            'password' => '{{ ldap_bind_params.password }}'
+            'encryption' => '{{ ldap_bind_params.encryption }}'
+            'base' => '{{ ldap_bind_params.base }}'
+            'verify_certificates' => '{{ ldap_bind_params.verify_certificates }}'
+            'active_directory' => true
+            'allow_username_or_email_login' => false
+            'lowercase_usernames' => false
+            'block_auto_created_users' => false
+          }
+        }
         {% endif %}
+
+        {% if gitlab_external_minio %}
+        gitlab_rails['object_store']['enabled'] = true
+        gitlab_rails['object_store']['connection'] = {
+          'provider' => 'AWS',
+          'aws_access_key_id' => '{{ minio_access_key }}',
+          'aws_secret_access_key' => '{{ minio_secret_key }}',
+          'host' => '{{ groups['minio_host'][0] }}',
+          'endpoint' => 'http://{{ groups['minio_host'][0] }}',
+          'path_style' => true
+        }
+        gitlab_rails['object_store']['objects']['artifacts']['bucket'] = 'gitlab-artifacts'
+        gitlab_rails['object_store']['objects']['external_diffs']['bucket'] = 'gitlab-diffs'
+        gitlab_rails['object_store']['objects']['lfs']['bucket'] = 'gitlab-lfs'
+        gitlab_rails['object_store']['objects']['uploads']['bucket'] = 'gitlab-uploads'
+        gitlab_rails['object_store']['objects']['packages']['bucket'] = 'gitlab-packages'
+        gitlab_rails['object_store']['objects']['dependency_proxy']['bucket'] = 'gitlab-dependency-proxy'
+        {% endif %}
+
+        redis['enable'] = false
+        gitlab_rails['redis_host'] = 'redis'
+        gitlab_rails['redis_port'] = '6379'
+
+        prometheus['enable'] = false
+        letsencrypt['enabled'] = false
 
         gitlab_rails['gitlab_shell_ssh_port'] = 2424
     volumes:
@@ -49,17 +81,7 @@ services:
       - '8484:80'
       - '2424:22'
     depends_on:
-      - postgres
       - redis
-  postgres:
-    image: 'postgres:{{ postgres_version }}'
-    container_name: 'postgres'
-    restart: always
-    environment:
-      POSTGRES_USER: '{{ postgresql_user }}'
-      POSTGRES_PASSWORD: '{{ postgresql_password }}'
-    volumes:
-      - 'postgres_data:/var/lib/postgresql/data'
   redis:
     image: 'redis:{{ redis_version }}'
     container_name: 'redis'
@@ -67,5 +89,4 @@ services:
     volumes:
       - 'redis_data:/var/lib/redis'
 volumes:
-  postgres_data:
   redis_data:

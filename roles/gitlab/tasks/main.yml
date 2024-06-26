@@ -8,8 +8,14 @@
 - name: Configuring GitLab
   import_tasks: gitlab_configuration.yml
 
-- name: Configuring Nginx
+- name: Installing external PostgreSQL
+  import_tasks: postgres_installation.yml
+  delegate_to: "{{ groups['postgres_host'][0] }}"
+  when: gitlab_external_postgres
+
+- name: Configuring external Nginx
   import_tasks: nginx_configuration.yml
+  delegate_to: "{{ groups['nginx_host'][0] }}"
   when: gitlab_external_nginx
 
 - name: Launching GitLab

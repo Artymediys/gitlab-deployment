@@ -1,7 +1,16 @@
 ---
+####################################
+############# VERSIONS #############
+####################################
+
 gitlab_ce_version: latest
-postgres_version: latest
+postgres_version: 16
 redis_version: latest
+
+
+####################################
+########### USERS/GROUPS ###########
+####################################
 
 gitlab_user: gitlab
 gitlab_group: gitlab
@@ -9,14 +18,31 @@ gitlab_group: gitlab
 nginx_user: nginx
 nginx_group: nginx
 
-gitlab_host_url: 192.168.1.251
+psql_user: postgres
+psql_group: postgres
 
-postgresql_user: 'super_user'
-postgresql_password: 'secure_password'
 
-gitlab_root_password: "super_password"
+#####################################
+######## POSTGRESQL SETTINGS ########
+#####################################
+
+gitlab_external_postgres: true
+psql_username: "super_user"
+psql_password: "secure_password"
+psql_database: "gitlab_db"
+
+
+#####################################
+########## GITLAB SETTINGS ##########
+#####################################
 
 gitlab_repo_path: "/srv/gitlab"
+gitlab_root_password: "super_password"
+
+
+####################################
+########## NGINX SETTINGS ##########
+####################################
 
 gitlab_external_nginx: false
 gitlab_nginx_server_name: "gitlab.example.com"
@@ -25,6 +51,11 @@ nginx_path: "/etc/nginx"
 enable_ssl: false
 ssl_certificate_path: "{{ nginx_path }}/ssl/gitlab.crt"
 ssl_certificate_key_path: "{{ nginx_path }}/ssl/gitlab.key"
+
+
+#####################################
+########### LDAP SETTINGS ###########
+#####################################
 
 gitlab_external_ldap: false
 ldap_bind_params:
@@ -35,6 +66,13 @@ ldap_bind_params:
   password: "bindpassword"
   encryption: "plain"
   base: "dc=example,dc=com"
-  group_base: "ou=groups,dc=example,dc=com"
-  admin_group: "cn=admins,ou=groups,dc=example,dc=com"
-  sync_ssh_keys: true
+  verify_certificates: false
+
+
+####################################
+########## MINIO SETTINGS ##########
+####################################
+
+gitlab_external_minio: false
+minio_access_key: ""
+minio_secret_key: ""
