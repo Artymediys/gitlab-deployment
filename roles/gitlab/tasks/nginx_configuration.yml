@@ -40,3 +40,8 @@
     line: 'include {{ nginx_path }}/conf.d/gitlab.conf;'
     insertafter: 'http {'
     state: present
+
+- name: Ensure the Nginx service is restarted
+  service:
+    name: nginx
+    state: restarted

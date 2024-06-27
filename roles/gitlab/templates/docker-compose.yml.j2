@@ -7,12 +7,11 @@ services:
     restart: always
     environment:
       GITLAB_OMNIBUS_CONFIG: |
-        external_url 'http{{ enable_ssl | ternary("s", "") }}://{{ groups['gitlab_host'][0] }}'
+        external_url 'http{{ enable_ssl | ternary("s", "") }}://{{ gitlab_external_url }}'
         gitlab_rails['initial_root_password'] = '{{ gitlab_root_password }}'
 
         {% if gitlab_external_nginx %}
-        nginx['listen_port'] = 80
-        nginx['listen_https'] = false
+        nginx['enable'] = false
         {% endif %}
 
         {% if gitlab_external_postgres %}
@@ -53,16 +52,18 @@ services:
           'provider' => 'AWS',
           'aws_access_key_id' => '{{ minio_access_key }}',
           'aws_secret_access_key' => '{{ minio_secret_key }}',
-          'host' => '{{ groups['minio_host'][0] }}',
-          'endpoint' => 'http://{{ groups['minio_host'][0] }}',
+          'endpoint' => '{{ minio_endpoint }}',
           'path_style' => true
         }
-        gitlab_rails['object_store']['objects']['artifacts']['bucket'] = 'gitlab-artifacts'
-        gitlab_rails['object_store']['objects']['external_diffs']['bucket'] = 'gitlab-diffs'
-        gitlab_rails['object_store']['objects']['lfs']['bucket'] = 'gitlab-lfs'
-        gitlab_rails['object_store']['objects']['uploads']['bucket'] = 'gitlab-uploads'
-        gitlab_rails['object_store']['objects']['packages']['bucket'] = 'gitlab-packages'
-        gitlab_rails['object_store']['objects']['dependency_proxy']['bucket'] = 'gitlab-dependency-proxy'
+        gitlab_rails['object_store']['objects']['artifacts']['bucket'] = '{{ minio_buckets.artifacts }}'
+        gitlab_rails['object_store']['objects']['external_diffs']['bucket'] = '{{ minio_buckets.external_diffs }}'
+        gitlab_rails['object_store']['objects']['lfs']['bucket'] = '{{ minio_buckets.lfs }}'
+        gitlab_rails['object_store']['objects']['uploads']['bucket'] = '{{ minio_buckets.uploads }}'
+        gitlab_rails['object_store']['objects']['packages']['bucket'] = '{{ minio_buckets.packages }}'
+        gitlab_rails['object_store']['objects']['dependency_proxy']['bucket'] = '{{ minio_buckets.dependency_proxy }}'
+        gitlab_rails['object_store']['objects']['terraform_state']['bucket'] = '{{ minio_buckets.terraform_state }}'
+        gitlab_rails['object_store']['objects']['ci_secure_files']['bucket'] = '{{ minio_buckets.ci_secure_files }}'
+        gitlab_rails['object_store']['objects']['pages']['bucket'] = '{{ minio_buckets.pages }}'
         {% endif %}
 
         redis['enable'] = false
@@ -72,14 +73,14 @@ services:
         prometheus['enable'] = false
         letsencrypt['enabled'] = false
 
-        gitlab_rails['gitlab_shell_ssh_port'] = 2424
+        gitlab_rails['gitlab_shell_ssh_port'] = {{ gitlab_container_ssh_port }}
     volumes:
       - '{{ gitlab_repo_path }}/config:/etc/gitlab'
       - '{{ gitlab_repo_path }}/logs:/var/log/gitlab'
       - '{{ gitlab_repo_path }}/data:/var/opt/gitlab'
     ports:
-      - '8484:80'
-      - '2424:22'
+      - '{{ gitlab_container_port }}:80'
+      - '{{ gitlab_container_ssh_port }}:22'
     depends_on:
       - redis
   redis:

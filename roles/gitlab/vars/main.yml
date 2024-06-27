@@ -4,8 +4,8 @@
 ####################################
 
 gitlab_ce_version: latest
-postgres_version: 16
 redis_version: latest
+postgres_version: 16
 
 
 ####################################
@@ -36,6 +36,10 @@ psql_database: "gitlab_db"
 ########## GITLAB SETTINGS ##########
 #####################################
 
+gitlab_external_url: "gitlab.example.com"
+gitlab_container_port: 8484
+gitlab_container_ssh_port: 2424
+
 gitlab_repo_path: "/srv/gitlab"
 gitlab_root_password: "super_password"
 
@@ -44,8 +48,7 @@ gitlab_root_password: "super_password"
 ########## NGINX SETTINGS ##########
 ####################################
 
-gitlab_external_nginx: false
-gitlab_nginx_server_name: "gitlab.example.com"
+gitlab_external_nginx: true
 nginx_path: "/etc/nginx"
 
 enable_ssl: false
@@ -57,7 +60,8 @@ ssl_certificate_key_path: "{{ nginx_path }}/ssl/gitlab.key"
 ########### LDAP SETTINGS ###########
 #####################################
 
-gitlab_external_ldap: false
+gitlab_external_ldap: true
+
 ldap_bind_params:
   host: "ldap.example.com"
   port: 389
@@ -73,6 +77,18 @@ ldap_bind_params:
 ########## MINIO SETTINGS ##########
 ####################################
 
-gitlab_external_minio: false
-minio_access_key: ""
-minio_secret_key: ""
+gitlab_external_minio: true
+minio_endpoint: "http://minio.example.com"
+minio_access_key: "super_login"
+minio_secret_key: "secret_pass"
+
+minio_buckets:
+  artifacts: "gitlab-artifacts"
+  external_diffs: "gitlab-diffs"
+  lfs: "gitlab-lfs"
+  uploads: "gitlab-uploads"
+  packages: "gitlab-packages"
+  dependency_proxy: "gitlab-dependency-proxy"
+  terraform_state: "gitlab-terraform-state"
+  ci_secure_files: "gitlab-ci-secure-files"
+  pages: "gitlab-pages"
