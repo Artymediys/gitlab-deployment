@@ -15,13 +15,32 @@ postgres_version: 16
 ######## SYSTEM USERS/GROUPS ########
 #####################################
 
-# Системные пользователь и группа для установки GitLab
+# Системные пользователь и группа для установки GitLab на хосте
 gitlab_user: gitlab
 gitlab_group: gitlab
 
-# Системные пользователь и группа, которые управляют внешним Nginx
-nginx_user: nginx
-nginx_group: nginx
+
+#####################################
+########## GITLAB SETTINGS ##########
+#####################################
+
+# Адрес, который используется для формирования ссылок внутри GitLab
+# Также этот адрес должен указывается в вашем внешнем Reverse Proxy
+gitlab_external_url: "gitlab.example.com"
+
+# Включение/отключение SSL
+# Если GitLab будет стоять за внешнем Reverse Proxy и принимать трафик по HTTPS, то следует включить SSL
+enable_ssl: true
+
+# Внешние порты контейнера для доступа к GitLab
+gitlab_container_port: 8484
+gitlab_container_ssh_port: 2424
+
+# Путь установки необходимых файлов для GitLab (путь не в контейнере, а конкретно на хосте!)
+gitlab_repo_path: "/data/gitlab"
+
+# Первоначальный пароль для root-пользователя GitLab
+gitlab_root_password: "super_password"
 
 
 #####################################
@@ -31,46 +50,31 @@ nginx_group: nginx
 # Включение/отключение внешнего PostgreSQL
 gitlab_external_postgres: true
 
-# Пользователь; пароль пользователя; название БД
-psql_username: "super_user"
-psql_password: "secure_password"
+# Данные для подключения к БД
+psql_host: "postgres.example.com"
+psql_port: "5432"
+psql_username: "gitlab_user"
+psql_password: "gitlab_password"
 psql_database: "gitlab_db"
 
 
 #####################################
-########## GITLAB SETTINGS ##########
+######### KEYCLOAK SETTINGS #########
 #####################################
 
-# Адрес, который используется для формирования ссылок внутри GitLab, а также указывается в Nginx
-gitlab_external_url: "gitlab.example.com"
+# Включение/отключение внешнего Keycloak
+# Keycloak поддерживается только при https подключении
+gitlab_external_keycloak: true
 
-# Порты контейнера для доступа к GitLab
-gitlab_container_port: 8484
-gitlab_container_ssh_port: 2424
+# Адрес Keycloak
+keycloak_issuer: "keycloak.example.com"
 
-# Путь установки необходимых файлов для GitLab (путь не в контейнере, а конкретно на хосте!)
-gitlab_repo_path: "/srv/gitlab"
+# Realm (пространство) Keycloak
+keycloak_realm: "name"
 
-# Пароль для root пользователя GitLab
-gitlab_root_password: "super_password"
-
-
-####################################
-########## NGINX SETTINGS ##########
-####################################
-
-# Включение/отключение внешнего Nginx
-gitlab_external_nginx: true
-
-# Путь, по которому установлен Nginx на внешнем хосте
-nginx_path: "/etc/nginx"
-
-# Включение/отключение SSL
-enable_ssl: false
-
-# Пути, по которым надо установить SSL-сертификаты на внешнем хосте
-ssl_certificate_path: "{{ nginx_path }}/ssl/gitlab.crt"
-ssl_certificate_key_path: "{{ nginx_path }}/ssl/gitlab.key"
+# Название клиента GitLab в Keycloak-пространстве и его Secret
+keycloak_client_name: "gitlab"
+keycloak_client_secret: "SomeMegaSuperSecretGeneratedByKC"
 
 
 #####################################
@@ -99,7 +103,7 @@ ldap_bind_params:
 # Включение/отключение внешнего MinIO
 gitlab_external_minio: true
 
-# Расположение MinIO
+# Адрес MinIO
 minio_endpoint: "http://minio.example.com"
 
 # Login/Password для доступа к MinIO

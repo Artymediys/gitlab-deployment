@@ -3,9 +3,8 @@
 **Роль** предназначена для развёртывания **GitLab** на ОС **AltLinux 10**.  
 Роль включает в себя:
 - Установка и настройка **GitLab** и **Redis** в **Docker**-контейнерах
-- Установка и настройка **PostgreSQL** на отдельном хосте
-- Настройка **GitLab**-конфига для взаимодействия с внешними **MinIO** и **LDAP**
-- Конфигурация внешнего **Nginx**, для корректного взаимодействия с **GitLab**
+- Настройка **GitLab**-конфига для взаимодействия с внешними **PostgreSQL** и **MinIO**
+- Настройка **GitLab**-конфига для взаимодействия с внешними **Keycloak** и **LDAP**
 
 ## Структура проекта
 
@@ -14,19 +13,15 @@ gitlab-deployment/
 ├── roles/
 │ ├── gitlab/
 │ │ ├── files/
-│ │ │ ├── ssl.crt
-│ │ │ ├── ssl.key
+│ │ │ ├── RootCA.crt
 │ │ ├── tasks/
 │ │ │ ├── docker_installation.yml
 │ │ │ ├── gitlab_configuration.yml
 │ │ │ ├── launch.yml
 │ │ │ ├── main.yml
-│ │ │ ├── nginx_configuration.yml
-│ │ │ ├── postgres_installation.yml
 │ │ │ ├── user.yml
 │ │ ├── templates/
 │ │ │ ├── docker-compose.yml.j2
-│ │ │ ├── nginx_gitlab.conf.j2
 │ │ ├── vars/
 │ │ │ ├── main.yml
 ├── .gitignore
@@ -38,7 +33,7 @@ gitlab-deployment/
 ```
 
 Основные моменты:
-- В `./roles/gitlab/files/` должны быть расположены файлы сертификатов, которые будут передаваться на хост **Nginx** в случае использования **SSL**
+- В `./roles/gitlab/files/` должны быть расположены файлы сертификатов, которые будут передаваться на хост **GitLab** (в контейнер) в случае использования **Keycloak**
 - В `./roles/gitlab/tasks/` находятся файлы с задачами, которые выполняются в рамках **Ansible**-роли
 - В `./roles/gitlab/templates/` находятся основные настройки сервисов, используемых **GitLab**-ом
 - В `./roles/gitlab/vars/` указаны переменные, которые используются в рамках **Ansible**-роли
@@ -54,14 +49,14 @@ gitlab-deployment/
 ## Зависимости
 
 Для установки **GitLab** в текущей реализации, требуется готовые внешние сервисы:
-- **Nginx**
-- **LDAP**
-- **MinIO**
+- **PostgreSQL** – Обязательно
+- **MinIO** – Обязательно
+- **LDAP** – Необязательно
+- **Keycloak** – Необязательно (требует `https` соединения)
 
 В случае **MinIO**, также требуются bucket-ы, заранее выделенные под **GitLab**.  
 Подробности в файле `./roles/gitlab/vars/main.yml`.
 
-Также для запуска **Ansible**-роли требуется установить коллекцию `community.postgresql`.
 
 ## Запуск Ansible-роли
 
@@ -76,5 +71,5 @@ gitlab-deployment/
     - role: gitlab
 ```
 
-Предварительно необходимо указать хосты в `./hosts.ini`, 
+Предварительно необходимо указать хост **GitLab** в `./hosts.ini`, 
 а также указать необходимую для пользователя конфигурацию в файле `./ansible.cfg`.

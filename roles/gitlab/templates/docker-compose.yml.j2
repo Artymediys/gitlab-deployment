@@ -10,19 +10,40 @@ services:
         external_url 'http{{ enable_ssl | ternary("s", "") }}://{{ gitlab_external_url }}'
         gitlab_rails['initial_root_password'] = '{{ gitlab_root_password }}'
 
-        {% if gitlab_external_nginx %}
-        nginx['enable'] = false
-        {% endif %}
+        nginx['listen_port'] = 80
+        nginx['listen_https'] = false
 
         {% if gitlab_external_postgres %}
         postgresql['enable'] = false
         gitlab_rails['db_username'] = '{{ psql_username }}'
         gitlab_rails['db_password'] = '{{ psql_password }}'
         gitlab_rails['db_database'] = '{{ psql_database }}'
-        gitlab_rails['db_host'] = '{{ groups['postgres_host'][0] }}'
-        gitlab_rails['db_port'] = 5432
+        gitlab_rails['db_host'] = '{{ psql_host }}'
+        gitlab_rails['db_port'] = {{ psql_port }}
         gitlab_rails['db_adapter'] = 'postgresql'
         gitlab_rails['db_encoding'] = 'unicode'
+        {% endif %}
+
+        gitlab_rails['omniauth_allow_single_sign_on'] = ['openid_connect']
+        gitlab_rails['omniauth_block_auto_created_users'] = false
+        {% if gitlab_external_keycloak %}
+        gitlab_rails['omniauth_providers'] = [{
+          'name' => 'openid_connect',
+          'label' => 'Keycloak',
+          'args' => {
+            'name' => 'openid_connect',
+            'scope' => ['openid','profile','email'],
+            'response_type' => 'code',
+            'issuer' => 'https://{{ keycloak_issuer }}/realms/{{ keycloak_realm }}',
+            'discovery' => true,
+            'client_auth_method' => 'query',
+            'client_options' => {
+              'identifier' => '{{ keycloak_client_name }}',
+              'secret' => '{{ keycloak_client_secret }}',
+              'redirect_uri' => 'https://{{ gitlab_external_url }}/users/auth/openid_connect/callback'
+            }
+          }
+        }]
         {% endif %}
 
         {% if gitlab_external_ldap %}
@@ -76,6 +97,7 @@ services:
         gitlab_rails['gitlab_shell_ssh_port'] = {{ gitlab_container_ssh_port }}
     volumes:
       - '{{ gitlab_repo_path }}/config:/etc/gitlab'
+      - '{{ gitlab_repo_path }}/certs:/etc/gitlab/trusted-certs'
       - '{{ gitlab_repo_path }}/logs:/var/log/gitlab'
       - '{{ gitlab_repo_path }}/data:/var/opt/gitlab'
     ports:
