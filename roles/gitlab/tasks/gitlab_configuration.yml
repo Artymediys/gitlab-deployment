@@ -12,19 +12,15 @@
     src: docker-compose.yml.j2
     dest: "{{ gitlab_repo_path }}/docker-compose.yml"
 
-- name: Find certificates
-  find:
-    paths: "{{ role_path }}/files"
-    patterns: "*.crt"
-    file_type: file
-  register: cert_files
-
 - name: Copy certificates
   copy:
-    src: "{{ item.path }}"
-    dest: "{{ gitlab_repo_path }}/certs/{{ item.path | basename }}"
+    src: "{{ item }}"
+    dest: "{{ gitlab_repo_path }}/certs/{{ item | basename }}"
     owner: "{{ gitlab_user }}"
     group: "{{ gitlab_group }}"
-    mode: '0755'
-  loop: "{{ cert_files.files }}"
-  when: cert_files.matched > 0
+    mode: '0644'
+  with_fileglob:
+    - "{{ role_path }}/files/*.crt"
+    - "{{ role_path }}/files/*.key"
+    - "{{ role_path }}/files/*.pem"
+    - "{{ role_path }}/files/*.ca"
