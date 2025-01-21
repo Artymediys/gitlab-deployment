@@ -24,9 +24,9 @@ services:
         gitlab_rails['db_encoding'] = 'unicode'
         {% endif %}
 
+        {% if gitlab_external_keycloak %}
         gitlab_rails['omniauth_allow_single_sign_on'] = ['openid_connect']
         gitlab_rails['omniauth_block_auto_created_users'] = false
-        {% if gitlab_external_keycloak %}
         gitlab_rails['omniauth_providers'] = [{
           'name' => 'openid_connect',
           'label' => 'Keycloak',
