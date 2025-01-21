@@ -12,6 +12,14 @@
     src: docker-compose.yml.j2
     dest: "{{ gitlab_repo_path }}/docker-compose.yml"
 
+- name: Create GitLab certs directory
+  file:
+    path: "{{ gitlab_repo_path }}/certs"
+    state: directory
+    owner: "{{ gitlab_user }}"
+    group: "{{ gitlab_group }}"
+    mode: '0755'
+
 - name: Copy certificates
   copy:
     src: "{{ item }}"
