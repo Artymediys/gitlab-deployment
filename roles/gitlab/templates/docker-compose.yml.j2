@@ -51,17 +51,17 @@ services:
         gitlab_rails['ldap_servers'] = {
           'main' => {
             'label' => 'LDAP',
-            'host' => '{{ ldap_bind_params.host }}'
-            'port' => {{ ldap_bind_params.port }}
-            'uid' => '{{ ldap_bind_params.uid }}'
-            'bind_dn' => '{{ ldap_bind_params.bind_dn }}'
-            'password' => '{{ ldap_bind_params.password }}'
-            'encryption' => '{{ ldap_bind_params.encryption }}'
-            'base' => '{{ ldap_bind_params.base }}'
-            'verify_certificates' => '{{ ldap_bind_params.verify_certificates }}'
-            'active_directory' => true
-            'allow_username_or_email_login' => false
-            'lowercase_usernames' => false
+            'host' => '{{ ldap_bind_params.host }}',
+            'port' => {{ ldap_bind_params.port }},
+            'uid' => '{{ ldap_bind_params.uid }}',
+            'bind_dn' => '{{ ldap_bind_params.bind_dn }}',
+            'password' => '{{ ldap_bind_params.password }}',
+            'encryption' => '{{ ldap_bind_params.encryption }}',
+            'base' => '{{ ldap_bind_params.base }}',
+            'verify_certificates' => '{{ ldap_bind_params.verify_certificates }}',
+            'active_directory' => true,
+            'allow_username_or_email_login' => false,
+            'lowercase_usernames' => false,
             'block_auto_created_users' => false
           }
         }
