@@ -4,11 +4,8 @@
 ####################################
 
 # Версии для GitLab и Redis - версии Docker-образов
-gitlab_ce_version: latest
-redis_version: latest
-
-# Версия для PostgreSQL - версия potgres-server в репозиториях AltLinux
-postgres_version: 16
+gitlab_ce_version: 17.2.1-ce.0
+redis_version: 7.4.2
 
 
 #####################################
